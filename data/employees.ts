@@ -1,20 +1,135 @@
-export const recommendations = [
+export type Employee = {
+  id: number
+  name: string
+  role: string
+  department: string
+  workload: number
+  performance: number
+  risk: "Low" | "Medium" | "High"
+  status: "Active" | "On Leave"
+  tasks: number
+  completed: number
+}
+
+export const employees: Employee[] = [
   {
-    title: "Review overdue engineering tasks",
-    description:
-      "23 tasks are currently overdue. Review engineering workload and identify blocked work items.",
-    priority: "High",
+    id: 1,
+    name: "Aarav Sharma",
+    role: "Senior Software Engineer",
+    department: "Engineering",
+    workload: 82,
+    performance: 91,
+    risk: "Medium",
+    status: "Active",
+    tasks: 18,
+    completed: 15,
   },
   {
-    title: "Monitor support ticket growth",
-    description:
-      "Support ticket volume is increasing. Review recent ticket trends and team capacity.",
-    priority: "Medium",
+    id: 2,
+    name: "Ananya Verma",
+    role: "Product Manager",
+    department: "Product",
+    workload: 68,
+    performance: 94,
+    risk: "Low",
+    status: "Active",
+    tasks: 14,
+    completed: 13,
   },
   {
-    title: "Improve team workload balance",
-    description:
-      "Several teams show uneven workload distribution. Consider reallocating tasks across available capacity.",
-    priority: "Medium",
+    id: 3,
+    name: "Rohan Mehta",
+    role: "Frontend Developer",
+    department: "Engineering",
+    workload: 91,
+    performance: 86,
+    risk: "High",
+    status: "Active",
+    tasks: 22,
+    completed: 17,
   },
-];
+  {
+    id: 4,
+    name: "Priya Kapoor",
+    role: "HR Manager",
+    department: "HR",
+    workload: 54,
+    performance: 89,
+    risk: "Low",
+    status: "Active",
+    tasks: 11,
+    completed: 10,
+  },
+  {
+    id: 5,
+    name: "Kabir Singh",
+    role: "Backend Engineer",
+    department: "Engineering",
+    workload: 76,
+    performance: 88,
+    risk: "Medium",
+    status: "Active",
+    tasks: 16,
+    completed: 13,
+  },
+  {
+    id: 6,
+    name: "Ishita Gupta",
+    role: "UX Designer",
+    department: "Design",
+    workload: 61,
+    performance: 93,
+    risk: "Low",
+    status: "Active",
+    tasks: 12,
+    completed: 11,
+  },
+  {
+    id: 7,
+    name: "Dev Malhotra",
+    role: "DevOps Engineer",
+    department: "Engineering",
+    workload: 88,
+    performance: 84,
+    risk: "High",
+    status: "Active",
+    tasks: 20,
+    completed: 14,
+  },
+  {
+    id: 8,
+    name: "Sara Khan",
+    role: "Customer Success Lead",
+    department: "Support",
+    workload: 73,
+    performance: 90,
+    risk: "Medium",
+    status: "Active",
+    tasks: 15,
+    completed: 13,
+  },
+  {
+    id: 9,
+    name: "Arjun Rao",
+    role: "Data Analyst",
+    department: "Analytics",
+    workload: 47,
+    performance: 95,
+    risk: "Low",
+    status: "Active",
+    tasks: 9,
+    completed: 9,
+  },
+  {
+    id: 10,
+    name: "Meera Joshi",
+    role: "Marketing Manager",
+    department: "Marketing",
+    workload: 66,
+    performance: 87,
+    risk: "Medium",
+    status: "On Leave",
+    tasks: 13,
+    completed: 10,
+  },
+]

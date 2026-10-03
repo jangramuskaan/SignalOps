@@ -132,8 +132,7 @@ export const employees: Employee[] = [
     tasks: 13,
     completed: 10,
   },
-];
-
+]
 export const recommendations = [
   {
     title: "Review overdue engineering tasks",

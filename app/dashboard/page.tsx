@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   Activity,
   AlertTriangle,
@@ -18,7 +19,7 @@ import {
 } from "lucide-react";
 
 import RiskTrendChart from "@/components/charts/RiskTrendChart";
-import LiveRiskOverview from "@/components/dashboard/LiveRiskOverview";
+import LiveAlerts from "@/components/dashboard/LiveAlerts";
 
 const departmentRisk = [
   { name: "Engineering", risk: 82 },
@@ -26,30 +27,6 @@ const departmentRisk = [
   { name: "HR", risk: 45 },
   { name: "Sales", risk: 28 },
   { name: "Marketing", risk: 18 },
-];
-
-const alerts = [
-  {
-    title: "Engineering workload elevated",
-    description:
-      "Several teams are operating above their recommended workload capacity.",
-    severity: "High",
-    time: "18 min ago",
-  },
-  {
-    title: "Support ticket volume increasing",
-    description:
-      "Customer support activity has increased compared with the previous period.",
-    severity: "Medium",
-    time: "42 min ago",
-  },
-  {
-    title: "Employee performance improved",
-    description:
-      "Organization-wide performance indicators increased by 3% this period.",
-    severity: "Low",
-    time: "1 hr ago",
-  },
 ];
 
 const recommendations = [
@@ -119,6 +96,7 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {/* Company Health */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
@@ -143,6 +121,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Operational Risk */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
@@ -167,6 +146,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Active Signals */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
@@ -194,6 +174,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
+        {/* Employee Performance */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
@@ -244,47 +225,49 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-7 space-y-5">
-            {departmentRisk.map((department) => (
-              <div key={department.name}>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-700">
-                    {department.name}
-                  </span>
+            {departmentRisk.map((department) => {
+              const riskColor =
+                department.risk >= 70
+                  ? "text-red-600"
+                  : department.risk >= 40
+                    ? "text-orange-600"
+                    : "text-green-600";
 
-                  <span
-                    className={`text-sm font-semibold ${
-                      department.risk >= 70
-                        ? "text-red-600"
-                        : department.risk >= 40
-                          ? "text-orange-600"
-                          : "text-green-600"
-                    }`}
-                  >
-                    {department.risk}
-                  </span>
-                </div>
+              const barColor =
+                department.risk >= 70
+                  ? "bg-red-500"
+                  : department.risk >= 40
+                    ? "bg-orange-500"
+                    : "bg-green-500";
 
-                <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className={`h-full rounded-full ${
-                      department.risk >= 70
-                        ? "bg-red-500"
-                        : department.risk >= 40
-                          ? "bg-orange-500"
-                          : "bg-green-500"
-                    }`}
-                    style={{ width: `${department.risk}%` }}
-                  />
+              return (
+                <div key={department.name}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-700">
+                      {department.name}
+                    </span>
+
+                    <span className={`text-sm font-semibold ${riskColor}`}>
+                      {department.risk}
+                    </span>
+                  </div>
+
+                  <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className={`h-full rounded-full ${barColor}`}
+                      style={{ width: `${department.risk}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Intelligence Summary */}
       <section className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
-        <div className="rounded-xl border bg-slate-950 p-6 text-white shadow-sm">
+        <div className="rounded-xl bg-slate-950 p-6 text-white shadow-sm">
           <div className="flex items-center gap-2">
             <Activity size={19} />
             <h2 className="text-lg font-semibold">Intelligence Summary</h2>
@@ -299,9 +282,7 @@ export default function DashboardPage() {
             <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
               <CircleAlert size={16} className="text-orange-400" />
 
-              <p className="mt-3 text-sm font-medium">
-                Engineering workload
-              </p>
+              <p className="mt-3 text-sm font-medium">Engineering workload</p>
 
               <p className="mt-2 text-xs leading-5 text-slate-400">
                 Highest operational risk area with a score of 82.
@@ -311,9 +292,7 @@ export default function DashboardPage() {
             <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
               <CheckCircle2 size={16} className="text-green-400" />
 
-              <p className="mt-3 text-sm font-medium">
-                Workforce performance
-              </p>
+              <p className="mt-3 text-sm font-medium">Workforce performance</p>
 
               <p className="mt-2 text-xs leading-5 text-slate-400">
                 Overall performance remains strong at 91%.
@@ -323,9 +302,7 @@ export default function DashboardPage() {
             <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
               <Activity size={16} className="text-blue-400" />
 
-              <p className="mt-3 text-sm font-medium">
-                Active monitoring
-              </p>
+              <p className="mt-3 text-sm font-medium">Active monitoring</p>
 
               <p className="mt-2 text-xs leading-5 text-slate-400">
                 24 signals are currently being monitored.
@@ -337,7 +314,9 @@ export default function DashboardPage() {
         <div className="rounded-xl border bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold">Portfolio Snapshot</h2>
+              <h2 className="text-lg font-semibold text-slate-950">
+                Portfolio Snapshot
+              </h2>
 
               <p className="mt-1 text-sm text-slate-500">
                 Current organizational coverage.
@@ -387,126 +366,59 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Alerts */}
-      <section className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <AlertTriangle size={18} className="text-orange-500" />
-                <h2 className="text-lg font-semibold">Recent Alerts</h2>
-              </div>
+      {/* Live Alerts */}
+      <section>
+        <LiveAlerts />
+      </section>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Latest signals detected by the intelligence engine.
-              </p>
+      {/* Recommendations */}
+      <section className="rounded-xl border bg-white p-6 shadow-sm">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Lightbulb size={18} className="text-yellow-500" />
+
+              <h2 className="text-lg font-semibold text-slate-950">
+                Recommended Actions
+              </h2>
             </div>
 
-            <Link
-              href="/intelligence"
-              className="text-xs font-medium text-slate-600 hover:text-slate-950"
-            >
-              View all →
-            </Link>
+            <p className="mt-1 text-sm text-slate-500">
+              Suggested actions based on current organizational signals.
+            </p>
           </div>
 
-          <div className="mt-5 divide-y">
-            {alerts.map((alert) => (
-              <div key={alert.title} className="py-4 first:pt-0 last:pb-0">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex gap-3">
-                    <div
-                      className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${
-                        alert.severity === "High"
-                          ? "bg-red-500"
-                          : alert.severity === "Medium"
-                            ? "bg-orange-500"
-                            : "bg-green-500"
-                      }`}
-                    />
-
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">
-                        {alert.title}
-                      </p>
-
-                      <p className="mt-1 text-xs leading-5 text-slate-500">
-                        {alert.description}
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className="whitespace-nowrap text-[11px] text-slate-400">
-                    {alert.time}
-                  </span>
-                </div>
-
-                <div className="ml-5 mt-2">
-                  <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
-                      alert.severity === "High"
-                        ? "bg-red-50 text-red-700"
-                        : alert.severity === "Medium"
-                          ? "bg-orange-50 text-orange-700"
-                          : "bg-green-50 text-green-700"
-                    }`}
-                  >
-                    {alert.severity} priority
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <Link
+            href="/recommendations"
+            className="text-xs font-medium text-slate-600 hover:text-slate-950"
+          >
+            View all →
+          </Link>
         </div>
 
-        {/* Recommendations */}
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <Lightbulb size={18} className="text-yellow-500" />
-                <h2 className="text-lg font-semibold">
-                  Recommended Actions
-                </h2>
-              </div>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Suggested actions based on current organizational signals.
-              </p>
-            </div>
-
-            <Link
-              href="/recommendations"
-              className="text-xs font-medium text-slate-600 hover:text-slate-950"
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          {recommendations.map((recommendation, index) => (
+            <div
+              key={recommendation.title}
+              className="rounded-lg border bg-slate-50 p-4"
             >
-              View all →
-            </Link>
-          </div>
+              <div className="flex gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-bold text-slate-700 shadow-sm">
+                  {index + 1}
+                </div>
 
-          <div className="mt-5 space-y-3">
-            {recommendations.map((recommendation, index) => (
-              <div
-                key={recommendation.title}
-                className="rounded-lg border bg-slate-50 p-4"
-              >
-                <div className="flex gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-bold text-slate-700 shadow-sm">
-                    {index + 1}
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-900">
+                    {recommendation.title}
+                  </p>
 
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">
-                      {recommendation.title}
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                      {recommendation.description}
-                    </p>
-                  </div>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    {recommendation.description}
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -537,9 +449,7 @@ export default function DashboardPage() {
         >
           <Building2 size={20} className="text-slate-500" />
 
-          <p className="mt-4 text-sm font-semibold">
-            Customer Intelligence
-          </p>
+          <p className="mt-4 text-sm font-semibold">Customer Intelligence</p>
 
           <p className="mt-1 text-xs text-slate-500">
             Monitor customer health and account risk.
@@ -556,9 +466,7 @@ export default function DashboardPage() {
         >
           <FileText size={20} className="text-slate-500" />
 
-          <p className="mt-4 text-sm font-semibold">
-            Analytics & Reports
-          </p>
+          <p className="mt-4 text-sm font-semibold">Analytics & Reports</p>
 
           <p className="mt-1 text-xs text-slate-500">
             Review trends and organizational reports.
@@ -575,9 +483,7 @@ export default function DashboardPage() {
         >
           <BarChart3 size={20} className="text-slate-500" />
 
-          <p className="mt-4 text-sm font-semibold">
-            Risk Intelligence
-          </p>
+          <p className="mt-4 text-sm font-semibold">Risk Intelligence</p>
 
           <p className="mt-1 text-xs text-slate-500">
             Explore operational risk across departments.
@@ -597,9 +503,7 @@ export default function DashboardPage() {
           </div>
 
           <div>
-            <p className="text-sm font-medium">
-              SignalOps systems operational
-            </p>
+            <p className="text-sm font-medium">SignalOps systems operational</p>
 
             <p className="text-xs text-slate-500">
               All intelligence modules are currently available.

@@ -1,6 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.alerts_engine import (
+    generate_alerts,
+    get_critical_alerts,
+    get_alert_summary,
+)
+
 from backend.risk_engine import (
     calculate_risk_summary,
     generate_risk_insights,
@@ -74,3 +80,22 @@ def priority_insights():
         "count": len(insights),
         "insights": insights,
     }
+
+
+@app.get("/api/alerts")
+def alerts():
+    return {
+        "alerts": generate_alerts(),
+    }
+
+
+@app.get("/api/alerts/critical")
+def critical_alerts():
+    return {
+        "alerts": get_critical_alerts(),
+    }
+
+
+@app.get("/api/alerts/summary")
+def alert_summary():
+    return get_alert_summary()

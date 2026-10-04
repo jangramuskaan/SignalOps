@@ -1,5 +1,7 @@
 import { intelligenceMetrics } from "@/data/intelligence";
 
+import AIInsights from "@/components/intelligence/AIInsights";
+
 export default function IntelligencePage() {
   return (
     <main className="min-h-screen bg-slate-50 p-6 md:p-8">
@@ -54,6 +56,9 @@ export default function IntelligencePage() {
           </div>
         ))}
       </section>
+
+
+      <AIInsights />
 
       {/* Main Intelligence Grid */}
       <section className="mb-8 grid gap-6 lg:grid-cols-3">

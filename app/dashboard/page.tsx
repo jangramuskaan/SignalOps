@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import RiskTrendChart from "@/components/charts/RiskTrendChart";
+import LiveRiskOverview from "@/components/dashboard/LiveRiskOverview";
 
 const departmentRisk = [
   { name: "Engineering", risk: 82 },

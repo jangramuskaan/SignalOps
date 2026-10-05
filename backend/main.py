@@ -17,6 +17,13 @@ from backend.insights_engine import (
     get_priority_insights,
 )
 
+from backend.employees_engine import (
+    get_employees,
+    calculate_employee_summary,
+    get_employee_insights,
+    get_department_summary,
+)
+
 app = FastAPI(
     title="SignalOps Intelligence API",
     description="Backend intelligence and operational risk engine for SignalOps.",
@@ -99,3 +106,29 @@ def critical_alerts():
 @app.get("/api/alerts/summary")
 def alert_summary():
     return get_alert_summary()
+
+
+@app.get("/api/employees")
+def employees():
+    return {
+        "employees": get_employees(),
+    }
+
+
+@app.get("/api/employees/summary")
+def employee_summary():
+    return calculate_employee_summary()
+
+
+@app.get("/api/employees/insights")
+def employee_insights():
+    return {
+        "insights": get_employee_insights(),
+    }
+
+
+@app.get("/api/employees/departments")
+def employee_departments():
+    return {
+        "departments": get_department_summary(),
+    }

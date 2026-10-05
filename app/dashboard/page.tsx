@@ -1,19 +1,20 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import {
   Activity,
   AlertTriangle,
-  ArrowDownRight,
+  ArrowRight,
   ArrowUpRight,
   BarChart3,
   Building2,
   CheckCircle2,
   ChevronRight,
-  CircleAlert,
   FileText,
   Lightbulb,
+  Loader2,
   ShieldCheck,
   Users,
 } from "lucide-react";
@@ -21,13 +22,19 @@ import {
 import RiskTrendChart from "@/components/charts/RiskTrendChart";
 import LiveAlerts from "@/components/dashboard/LiveAlerts";
 
-const departmentRisk = [
-  { name: "Engineering", risk: 82 },
-  { name: "Support", risk: 68 },
-  { name: "HR", risk: 45 },
-  { name: "Sales", risk: 28 },
-  { name: "Marketing", risk: 18 },
-];
+type DepartmentRisk = {
+  department: string;
+  risk: number;
+};
+
+type RiskData = {
+  overall_risk: number;
+  company_health: number;
+  risk_level: string;
+  high_risk_count: number;
+  medium_risk_count: number;
+  departments: DepartmentRisk[];
+};
 
 const recommendations = [
   {
@@ -65,6 +72,49 @@ function HealthBar({
 }
 
 export default function DashboardPage() {
+  const [riskData, setRiskData] = useState<RiskData | null>(null);
+  const [loadingRisk, setLoadingRisk] = useState(true);
+  const [riskError, setRiskError] = useState(false);
+
+  useEffect(() => {
+    async function loadRiskData() {
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/risk",
+          {
+            cache: "no-store",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to load risk data");
+        }
+
+        const data: RiskData = await response.json();
+
+        setRiskData(data);
+        setRiskError(false);
+      } catch (error) {
+        console.error("Dashboard risk API error:", error);
+        setRiskError(true);
+      } finally {
+        setLoadingRisk(false);
+      }
+    }
+
+    loadRiskData();
+  }, []);
+
+  const companyHealth = riskData?.company_health ?? 0;
+  const operationalRisk = riskData?.overall_risk ?? 0;
+
+  const highRiskCount = riskData?.high_risk_count ?? 0;
+  const mediumRiskCount = riskData?.medium_risk_count ?? 0;
+
+  const activeSignals = highRiskCount + mediumRiskCount;
+
+  const departmentRisk = riskData?.departments ?? [];
+
   return (
     <main className="space-y-6 p-6 lg:p-8">
       {/* Header */}
@@ -87,14 +137,21 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2 shadow-sm">
-          <span className="h-2 w-2 rounded-full bg-green-500" />
+          <span
+            className={`h-2 w-2 rounded-full ${
+              riskError ? "bg-red-500" : "bg-green-500"
+            }`}
+          />
+
           <span className="text-xs font-medium text-slate-600">
-            Intelligence updated recently
+            {riskError
+              ? "Intelligence API unavailable"
+              : "Intelligence engine connected"}
           </span>
         </div>
       </section>
 
-      {/* KPI Cards */}
+      {/* Live KPI Cards */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Company Health */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
@@ -103,7 +160,19 @@ export default function DashboardPage() {
               <p className="text-sm font-medium text-slate-500">
                 Company Health
               </p>
-              <p className="mt-2 text-3xl font-bold text-slate-950">87%</p>
+
+              <div className="mt-2 flex items-center gap-2">
+                {loadingRisk ? (
+                  <Loader2
+                    size={22}
+                    className="animate-spin text-slate-400"
+                  />
+                ) : (
+                  <p className="text-3xl font-bold text-slate-950">
+                    {companyHealth}%
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-600">
@@ -112,12 +181,15 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-4">
-            <HealthBar value={87} className="bg-green-500" />
+            <HealthBar
+              value={companyHealth}
+              className="bg-green-500"
+            />
           </div>
 
           <div className="mt-3 flex items-center gap-1 text-xs font-medium text-green-600">
-            <ArrowUpRight size={14} />
-            4% from previous period
+            <CheckCircle2 size={14} />
+            Calculated by Python risk engine
           </div>
         </div>
 
@@ -128,7 +200,19 @@ export default function DashboardPage() {
               <p className="text-sm font-medium text-slate-500">
                 Operational Risk
               </p>
-              <p className="mt-2 text-3xl font-bold text-slate-950">68</p>
+
+              <div className="mt-2">
+                {loadingRisk ? (
+                  <Loader2
+                    size={22}
+                    className="animate-spin text-slate-400"
+                  />
+                ) : (
+                  <p className="text-3xl font-bold text-slate-950">
+                    {operationalRisk}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
@@ -137,12 +221,14 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-4">
-            <HealthBar value={68} className="bg-orange-500" />
+            <HealthBar
+              value={operationalRisk}
+              className="bg-orange-500"
+            />
           </div>
 
-          <div className="mt-3 flex items-center gap-1 text-xs font-medium text-orange-600">
-            <ArrowUpRight size={14} />
-            7% risk increase
+          <div className="mt-3 text-xs font-medium text-orange-600">
+            Risk level: {riskData?.risk_level ?? "Loading..."}
           </div>
         </div>
 
@@ -153,7 +239,19 @@ export default function DashboardPage() {
               <p className="text-sm font-medium text-slate-500">
                 Active Signals
               </p>
-              <p className="mt-2 text-3xl font-bold text-slate-950">24</p>
+
+              <div className="mt-2">
+                {loadingRisk ? (
+                  <Loader2
+                    size={22}
+                    className="animate-spin text-slate-400"
+                  />
+                ) : (
+                  <p className="text-3xl font-bold text-slate-950">
+                    {activeSignals}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
@@ -163,14 +261,16 @@ export default function DashboardPage() {
 
           <div className="mt-4 flex items-center gap-2">
             <span className="rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">
-              Monitoring
+              Live
             </span>
 
-            <span className="text-xs text-slate-500">Across 6 areas</span>
+            <span className="text-xs text-slate-500">
+              From risk engine
+            </span>
           </div>
 
           <p className="mt-3 text-xs text-slate-500">
-            Signals requiring continuous observation
+            {highRiskCount} high-risk · {mediumRiskCount} medium-risk
           </p>
         </div>
 
@@ -181,7 +281,10 @@ export default function DashboardPage() {
               <p className="text-sm font-medium text-slate-500">
                 Employee Performance
               </p>
-              <p className="mt-2 text-3xl font-bold text-slate-950">91%</p>
+
+              <p className="mt-2 text-3xl font-bold text-slate-950">
+                91%
+              </p>
             </div>
 
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
@@ -190,7 +293,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-4">
-            <HealthBar value={91} className="bg-purple-500" />
+            <HealthBar
+              value={91}
+              className="bg-purple-500"
+            />
           </div>
 
           <div className="mt-3 flex items-center gap-1 text-xs font-medium text-green-600">
@@ -212,100 +318,132 @@ export default function DashboardPage() {
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Current operational risk across business functions.
+                Live operational risk from the Python intelligence engine.
               </p>
             </div>
 
             <Link
               href="/risk-map"
-              className="text-xs font-medium text-slate-600 hover:text-slate-950"
+              className="text-xs font-medium text-slate-600 transition hover:text-slate-950"
             >
               View risk map →
             </Link>
           </div>
 
           <div className="mt-7 space-y-5">
-            {departmentRisk.map((department) => {
-              const riskColor =
-                department.risk >= 70
-                  ? "text-red-600"
-                  : department.risk >= 40
-                    ? "text-orange-600"
-                    : "text-green-600";
-
-              const barColor =
-                department.risk >= 70
-                  ? "bg-red-500"
-                  : department.risk >= 40
-                    ? "bg-orange-500"
-                    : "bg-green-500";
-
-              return (
-                <div key={department.name}>
+            {loadingRisk ? (
+              <div className="flex items-center gap-2 py-8 text-sm text-slate-500">
+                <Loader2
+                  size={18}
+                  className="animate-spin"
+                />
+                Loading department intelligence...
+              </div>
+            ) : departmentRisk.length === 0 ? (
+              <p className="py-8 text-sm text-slate-500">
+                No department risk data available.
+              </p>
+            ) : (
+              departmentRisk.map((department) => (
+                <div key={department.department}>
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-sm font-medium text-slate-700">
-                      {department.name}
+                      {department.department}
                     </span>
 
-                    <span className={`text-sm font-semibold ${riskColor}`}>
+                    <span
+                      className={`text-sm font-semibold ${
+                        department.risk >= 70
+                          ? "text-red-600"
+                          : department.risk >= 40
+                            ? "text-orange-600"
+                            : "text-green-600"
+                      }`}
+                    >
                       {department.risk}
                     </span>
                   </div>
 
                   <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className={`h-full rounded-full ${barColor}`}
-                      style={{ width: `${department.risk}%` }}
+                      className={`h-full rounded-full ${
+                        department.risk >= 70
+                          ? "bg-red-500"
+                          : department.risk >= 40
+                            ? "bg-orange-500"
+                            : "bg-green-500"
+                      }`}
+                      style={{
+                        width: `${department.risk}%`,
+                      }}
                     />
                   </div>
                 </div>
-              );
-            })}
+              ))
+            )}
           </div>
         </div>
       </section>
 
       {/* Intelligence Summary */}
       <section className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
-        <div className="rounded-xl bg-slate-950 p-6 text-white shadow-sm">
+        <div className="rounded-xl border bg-slate-950 p-6 text-white shadow-sm">
           <div className="flex items-center gap-2">
             <Activity size={19} />
-            <h2 className="text-lg font-semibold">Intelligence Summary</h2>
+
+            <h2 className="text-lg font-semibold">
+              Intelligence Summary
+            </h2>
           </div>
 
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            SignalOps has identified several operational patterns that deserve
-            attention during the current reporting period.
+            SignalOps has identified several operational patterns that
+            deserve attention during the current reporting period.
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
-              <CircleAlert size={16} className="text-orange-400" />
+              <AlertTriangle
+                size={16}
+                className="text-orange-400"
+              />
 
-              <p className="mt-3 text-sm font-medium">Engineering workload</p>
+              <p className="mt-3 text-sm font-medium">
+                Highest risk
+              </p>
 
               <p className="mt-2 text-xs leading-5 text-slate-400">
-                Highest operational risk area with a score of 82.
+                Engineering currently has the highest operational risk.
               </p>
             </div>
 
             <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
-              <CheckCircle2 size={16} className="text-green-400" />
+              <CheckCircle2
+                size={16}
+                className="text-green-400"
+              />
 
-              <p className="mt-3 text-sm font-medium">Workforce performance</p>
+              <p className="mt-3 text-sm font-medium">
+                Company health
+              </p>
 
               <p className="mt-2 text-xs leading-5 text-slate-400">
-                Overall performance remains strong at 91%.
+                Current company health is {companyHealth}%.
               </p>
             </div>
 
             <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
-              <Activity size={16} className="text-blue-400" />
+              <Activity
+                size={16}
+                className="text-blue-400"
+              />
 
-              <p className="mt-3 text-sm font-medium">Active monitoring</p>
+              <p className="mt-3 text-sm font-medium">
+                Active monitoring
+              </p>
 
               <p className="mt-2 text-xs leading-5 text-slate-400">
-                24 signals are currently being monitored.
+                {activeSignals} risk signals are currently active.
               </p>
             </div>
           </div>
@@ -314,7 +452,7 @@ export default function DashboardPage() {
         <div className="rounded-xl border bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-950">
+              <h2 className="text-lg font-semibold">
                 Portfolio Snapshot
               </h2>
 
@@ -323,14 +461,23 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            <BarChart3 size={20} className="text-slate-400" />
+            <BarChart3
+              size={20}
+              className="text-slate-400"
+            />
           </div>
 
           <div className="mt-6 space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Users size={18} className="text-slate-400" />
-                <span className="text-sm">Employees monitored</span>
+                <Users
+                  size={18}
+                  className="text-slate-400"
+                />
+
+                <span className="text-sm text-slate-600">
+                  Employees monitored
+                </span>
               </div>
 
               <span className="font-semibold">1,526</span>
@@ -338,8 +485,14 @@ export default function DashboardPage() {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Building2 size={18} className="text-slate-400" />
-                <span className="text-sm">Customer accounts</span>
+                <Building2
+                  size={18}
+                  className="text-slate-400"
+                />
+
+                <span className="text-sm text-slate-600">
+                  Customer accounts
+                </span>
               </div>
 
               <span className="font-semibold">6</span>
@@ -347,20 +500,36 @@ export default function DashboardPage() {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <AlertTriangle size={18} className="text-slate-400" />
-                <span className="text-sm">High-risk areas</span>
+                <AlertTriangle
+                  size={18}
+                  className="text-slate-400"
+                />
+
+                <span className="text-sm text-slate-600">
+                  High-risk areas
+                </span>
               </div>
 
-              <span className="font-semibold text-red-600">2</span>
+              <span className="font-semibold text-red-600">
+                {highRiskCount}
+              </span>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Activity size={18} className="text-slate-400" />
-                <span className="text-sm">Active signals</span>
+                <Activity
+                  size={18}
+                  className="text-slate-400"
+                />
+
+                <span className="text-sm text-slate-600">
+                  Active signals
+                </span>
               </div>
 
-              <span className="font-semibold">24</span>
+              <span className="font-semibold">
+                {activeSignals}
+              </span>
             </div>
           </div>
         </div>
@@ -376,9 +545,12 @@ export default function DashboardPage() {
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Lightbulb size={18} className="text-yellow-500" />
+              <Lightbulb
+                size={18}
+                className="text-yellow-500"
+              />
 
-              <h2 className="text-lg font-semibold text-slate-950">
+              <h2 className="text-lg font-semibold">
                 Recommended Actions
               </h2>
             </div>
@@ -390,7 +562,7 @@ export default function DashboardPage() {
 
           <Link
             href="/recommendations"
-            className="text-xs font-medium text-slate-600 hover:text-slate-950"
+            className="text-xs font-medium text-slate-600 transition hover:text-slate-950"
           >
             View all →
           </Link>
@@ -428,7 +600,10 @@ export default function DashboardPage() {
           href="/employees"
           className="group rounded-xl border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
         >
-          <Users size={20} className="text-slate-500" />
+          <Users
+            size={20}
+            className="text-slate-500"
+          />
 
           <p className="mt-4 text-sm font-semibold">
             Employee Intelligence
@@ -439,7 +614,8 @@ export default function DashboardPage() {
           </p>
 
           <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium">
-            Explore <ChevronRight size={13} />
+            Explore
+            <ArrowRight size={13} />
           </span>
         </Link>
 
@@ -447,16 +623,22 @@ export default function DashboardPage() {
           href="/customers"
           className="group rounded-xl border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
         >
-          <Building2 size={20} className="text-slate-500" />
+          <Building2
+            size={20}
+            className="text-slate-500"
+          />
 
-          <p className="mt-4 text-sm font-semibold">Customer Intelligence</p>
+          <p className="mt-4 text-sm font-semibold">
+            Customer Intelligence
+          </p>
 
           <p className="mt-1 text-xs text-slate-500">
             Monitor customer health and account risk.
           </p>
 
           <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium">
-            Explore <ChevronRight size={13} />
+            Explore
+            <ArrowRight size={13} />
           </span>
         </Link>
 
@@ -464,16 +646,22 @@ export default function DashboardPage() {
           href="/reports"
           className="group rounded-xl border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
         >
-          <FileText size={20} className="text-slate-500" />
+          <FileText
+            size={20}
+            className="text-slate-500"
+          />
 
-          <p className="mt-4 text-sm font-semibold">Analytics & Reports</p>
+          <p className="mt-4 text-sm font-semibold">
+            Analytics & Reports
+          </p>
 
           <p className="mt-1 text-xs text-slate-500">
             Review trends and organizational reports.
           </p>
 
           <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium">
-            Explore <ChevronRight size={13} />
+            Explore
+            <ArrowRight size={13} />
           </span>
         </Link>
 
@@ -481,39 +669,57 @@ export default function DashboardPage() {
           href="/risk-map"
           className="group rounded-xl border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
         >
-          <BarChart3 size={20} className="text-slate-500" />
+          <BarChart3
+            size={20}
+            className="text-slate-500"
+          />
 
-          <p className="mt-4 text-sm font-semibold">Risk Intelligence</p>
+          <p className="mt-4 text-sm font-semibold">
+            Risk Intelligence
+          </p>
 
           <p className="mt-1 text-xs text-slate-500">
             Explore operational risk across departments.
           </p>
 
           <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium">
-            Explore <ChevronRight size={13} />
+            Explore
+            <ArrowRight size={13} />
           </span>
         </Link>
       </section>
 
-      {/* Footer Status */}
+      {/* Footer */}
       <section className="flex flex-col gap-3 rounded-xl border bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-50">
-            <CheckCircle2 size={17} className="text-green-600" />
+            <CheckCircle2
+              size={17}
+              className="text-green-600"
+            />
           </div>
 
           <div>
-            <p className="text-sm font-medium">SignalOps systems operational</p>
+            <p className="text-sm font-medium">
+              SignalOps systems operational
+            </p>
 
             <p className="text-xs text-slate-500">
-              All intelligence modules are currently available.
+              Risk intelligence is connected to the Python backend.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-500">
-          <ArrowDownRight size={14} />
-          Data refreshed for current reporting period
+          <span
+            className={`h-2 w-2 rounded-full ${
+              riskError ? "bg-red-500" : "bg-green-500"
+            }`}
+          />
+
+          {riskError
+            ? "Backend connection unavailable"
+            : "Live intelligence connected"}
         </div>
       </section>
     </main>

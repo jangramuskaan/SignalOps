@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, File, UploadFile
+from backend.upload_engine import process_uploaded_file, analyze_dataset
 
 from backend.alerts_engine import (
     generate_alerts,
@@ -194,3 +196,17 @@ def report_insights():
     return {
         "insights": generate_report_insights(),
     }
+
+@app.post("/api/upload")
+async def upload_file(file: UploadFile = File(...)):
+    content = await file.read()
+
+    result = process_uploaded_file(
+        filename=file.filename or "unknown.csv",
+        file_content=content,
+    )
+
+    if result["success"]:
+        result["analysis"] = analyze_dataset(result)
+
+    return result

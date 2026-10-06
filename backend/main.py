@@ -31,6 +31,13 @@ from backend.customers_engine import (
     get_industry_summary,
 )
 
+from backend.reports_engine import (
+    get_monthly_data,
+    calculate_report_summary,
+    generate_report_insights,
+    generate_report,
+)
+
 app = FastAPI(
     title="SignalOps Intelligence API",
     description="Backend intelligence and operational risk engine for SignalOps.",
@@ -163,4 +170,27 @@ def customer_insights():
 def customer_industries():
     return {
         "industries": get_industry_summary(),
+    }
+
+@app.get("/api/reports")
+def reports():
+    return generate_report()
+
+
+@app.get("/api/reports/summary")
+def report_summary():
+    return calculate_report_summary()
+
+
+@app.get("/api/reports/monthly")
+def report_monthly():
+    return {
+        "monthly_data": get_monthly_data(),
+    }
+
+
+@app.get("/api/reports/insights")
+def report_insights():
+    return {
+        "insights": generate_report_insights(),
     }

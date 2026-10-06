@@ -24,6 +24,13 @@ from backend.employees_engine import (
     get_department_summary,
 )
 
+from backend.customers_engine import (
+    get_customers,
+    calculate_customer_summary,
+    get_customer_insights,
+    get_industry_summary,
+)
+
 app = FastAPI(
     title="SignalOps Intelligence API",
     description="Backend intelligence and operational risk engine for SignalOps.",
@@ -131,4 +138,29 @@ def employee_insights():
 def employee_departments():
     return {
         "departments": get_department_summary(),
+    }
+
+@app.get("/api/customers")
+def customers():
+    return {
+        "customers": get_customers(),
+    }
+
+
+@app.get("/api/customers/summary")
+def customer_summary():
+    return calculate_customer_summary()
+
+
+@app.get("/api/customers/insights")
+def customer_insights():
+    return {
+        "insights": get_customer_insights(),
+    }
+
+
+@app.get("/api/customers/industries")
+def customer_industries():
+    return {
+        "industries": get_industry_summary(),
     }

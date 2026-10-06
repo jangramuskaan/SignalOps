@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile
 from backend.upload_engine import process_uploaded_file, analyze_dataset
+from backend.dashboard_engine import generate_dashboard
+
 
 from backend.alerts_engine import (
     generate_alerts,
@@ -210,3 +212,7 @@ async def upload_file(file: UploadFile = File(...)):
         result["analysis"] = analyze_dataset(result)
 
     return result
+
+@app.get("/api/dashboard")
+def dashboard():
+    return generate_dashboard()

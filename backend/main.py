@@ -42,6 +42,12 @@ from backend.reports_engine import (
     generate_report,
 )
 
+from backend.upload_history import (
+    record_upload,
+    get_upload_history,
+    get_upload_summary,
+)
+
 app = FastAPI(
     title="SignalOps Intelligence API",
     description="Backend intelligence and operational risk engine for SignalOps.",
@@ -211,8 +217,17 @@ async def upload_file(file: UploadFile = File(...)):
     if result["success"]:
         result["analysis"] = analyze_dataset(result)
 
+    record_upload(result)
+
     return result
 
-@app.get("/api/dashboard")
-def dashboard():
-    return generate_dashboard()
+@app.get("/api/uploads")
+def uploads():
+    return {
+        "uploads": get_upload_history(),
+    }
+
+
+@app.get("/api/uploads/summary")
+def uploads_summary():
+    return get_upload_summary()
